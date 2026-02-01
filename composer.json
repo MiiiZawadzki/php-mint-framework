@@ -1,0 +1,21 @@
+{
+    "name": "miiizawadzki/php-mint-framework",
+    "description": "A minimal PHP framework",
+    "version": "0.0.0",
+    "type": "project",
+    "require": {
+        "php": ">=8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Mint\\Core\\": "core/"
+        },
+        "files": [
+            "helpers.php"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
