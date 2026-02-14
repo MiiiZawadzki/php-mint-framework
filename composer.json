@@ -4,7 +4,8 @@
     "version": "0.0.0",
     "type": "project",
     "require": {
-        "php": ">=8.2"
+        "php": ">=8.2",
+        "ext-pdo": "*"
     },
     "autoload": {
         "psr-4": {
@@ -16,6 +17,12 @@
         ]
     },
     "config": {
-        "optimize-autoloader": true
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "require-dev": {
+        "pestphp/pest": "*"
     }
 }

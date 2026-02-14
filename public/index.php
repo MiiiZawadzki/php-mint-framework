@@ -5,10 +5,13 @@ use Mint\Core\Http\Request;
 use Mint\Core\Http\Response;
 use Mint\Core\Http\Router;
 
-require __DIR__.'/../bootstrap.php';
+$container = require __DIR__ . '/../bootstrap.php';
 
-$router = new Router();
+$router = $container->make(Router::class);
 
-$router->get('/', [new IndexController(), 'index']);
+$router->get('/', [IndexController::class, 'index']);
 
-$router->dispatch(new Request(), new Response());
+$router->dispatch(
+    $container->make(Request::class),
+    $container->make(Response::class)
+);
