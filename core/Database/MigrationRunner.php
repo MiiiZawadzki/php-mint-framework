@@ -1,20 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mint\Core\Database;
 
 use PDO;
 
 class MigrationRunner
 {
+    /**
+     * @param  PDO  $pdo
+     * @param  MigrationRepository  $repository
+     */
     public function __construct(
-        private PDO                 $pdo,
+        private PDO $pdo,
         private MigrationRepository $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param array $migrations
+     * Run all pending migrations.
+     *
+     * @param  array<int, MigrationInterface>  $migrations
+     *
      * @return void
      */
     public function run(array $migrations): void

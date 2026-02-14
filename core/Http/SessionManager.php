@@ -1,9 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mint\Core\Http;
 
 class SessionManager
 {
+    /**
+     * Start the session if not already started.
+     */
     public function __construct()
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -12,8 +17,11 @@ class SessionManager
     }
 
     /**
+     * Set a session value.
+     *
      * @param string $key
-     * @param mixed $value
+     * @param mixed  $value
+     *
      * @return void
      */
     public function set(string $key, mixed $value): void
@@ -22,7 +30,10 @@ class SessionManager
     }
 
     /**
+     * Get a session value.
+     *
      * @param string $key
+     *
      * @return mixed
      */
     public function get(string $key): mixed
@@ -31,7 +42,10 @@ class SessionManager
     }
 
     /**
+     * Check if a session key exists.
+     *
      * @param string $key
+     *
      * @return bool
      */
     public function has(string $key): bool
@@ -40,7 +54,10 @@ class SessionManager
     }
 
     /**
+     * Remove a session value.
+     *
      * @param string $key
+     *
      * @return void
      */
     public function remove(string $key): void
@@ -49,6 +66,8 @@ class SessionManager
     }
 
     /**
+     * Destroy the session.
+     *
      * @return void
      */
     public function destroy(): void

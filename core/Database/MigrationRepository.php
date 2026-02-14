@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mint\Core\Database;
 
 use PDO;
@@ -20,7 +22,9 @@ class MigrationRepository
     }
 
     /**
-     * @return array
+     * Get the list of executed migration names.
+     *
+     * @return array<int, string>
      */
     public function getExecuted(): array
     {
@@ -30,7 +34,10 @@ class MigrationRepository
     }
 
     /**
+     * Mark a migration as executed.
+     *
      * @param string $name
+     *
      * @return void
      */
     public function markAsExecuted(string $name): void

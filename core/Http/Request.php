@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mint\Core\Http;
 
 class Request
 {
     /**
+     * Get the HTTP request method.
+     *
      * @return string
      */
     public function getMethod(): string
@@ -13,6 +17,8 @@ class Request
     }
 
     /**
+     * Get the request URI path.
+     *
      * @return string
      */
     public function getUri(): string
@@ -21,7 +27,9 @@ class Request
     }
 
     /**
-     * @return array
+     * Get the request input data.
+     *
+     * @return array<string, mixed>
      */
     public function getInput(): array
     {
@@ -29,6 +37,8 @@ class Request
     }
 
     /**
+     * Get the HTTP referer.
+     *
      * @return string
      */
     public function getReferer(): string

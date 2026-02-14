@@ -1,14 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mint\Core\Database;
 
 use PDO;
 
 class Database
 {
+    /**
+     * Shared PDO connection instance.
+     *
+     * @var PDO|null
+     */
     private static ?PDO $connection = null;
 
     /**
+     * Get the database connection.
+     *
      * @return PDO
      */
     public static function getConnection(): PDO

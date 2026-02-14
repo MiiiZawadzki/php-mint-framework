@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 require __DIR__ . '/bootstrap.php';
 
 use Mint\Core\Database\Database;
+use Mint\Core\Database\MigrationInterface;
 use Mint\Core\Database\MigrationRepository;
 use Mint\Core\Database\MigrationRunner;
 
@@ -15,7 +18,7 @@ foreach ($migrationFiles as $file) {
 $migrations = [];
 
 foreach (get_declared_classes() as $class) {
-    if (in_array(\Mint\Core\Database\MigrationInterface::class, class_implements($class))) {
+    if (in_array(MigrationInterface::class, class_implements($class))) {
         $migrations[] = new $class();
     }
 }

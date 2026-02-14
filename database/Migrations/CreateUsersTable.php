@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Database\Migrations;
 
 use Mint\Core\Database\MigrationInterface;
@@ -8,6 +10,8 @@ use PDO;
 class CreateUsersTable implements MigrationInterface
 {
     /**
+     * Get the migration name.
+     *
      * @return string
      */
     public function getName(): string
@@ -16,7 +20,10 @@ class CreateUsersTable implements MigrationInterface
     }
 
     /**
-     * @param  PDO  $pdo
+     * Run the migration.
+     *
+     * @param PDO $pdo
+     *
      * @return void
      */
     public function up(PDO $pdo): void
@@ -33,7 +40,10 @@ class CreateUsersTable implements MigrationInterface
     }
 
     /**
-     * @param  PDO  $pdo
+     * Reverse the migration.
+     *
+     * @param PDO $pdo
+     *
      * @return void
      */
     public function down(PDO $pdo): void
