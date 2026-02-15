@@ -17,4 +17,8 @@ $container->singleton(Response::class);
 $container->singleton(SessionManager::class);
 $container->singleton(Router::class);
 
+// Load routes
+require __DIR__ . '/routes/web.php';
+require __DIR__ . '/routes/api.php';
+
 return $container;

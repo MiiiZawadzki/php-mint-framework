@@ -17,19 +17,68 @@ describe('Router', function () {
         it('registers GET route', function () {
             $this->router->get('/test', fn () => 'test');
 
-            $routes = getPrivateProperty($this->router, 'routes');
+            $routes = $this->router->getRoutes();
 
             expect($routes)->toHaveKey('GET');
-            expect($routes['GET'])->toHaveKey('/test');
+            expect(array_keys($routes['GET']))->toContain('#^/test$#');
         });
 
         it('registers POST route', function () {
             $this->router->post('/test', fn () => 'test');
 
-            $routes = getPrivateProperty($this->router, 'routes');
+            $routes = $this->router->getRoutes();
 
             expect($routes)->toHaveKey('POST');
-            expect($routes['POST'])->toHaveKey('/test');
+            expect(array_keys($routes['POST']))->toContain('#^/test$#');
+        });
+
+        it('registers PUT route', function () {
+            $this->router->put('/test', fn () => 'test');
+
+            $routes = $this->router->getRoutes();
+
+            expect($routes)->toHaveKey('PUT');
+            expect(array_keys($routes['PUT']))->toContain('#^/test$#');
+        });
+
+        it('registers PATCH route', function () {
+            $this->router->patch('/test', fn () => 'test');
+
+            $routes = $this->router->getRoutes();
+
+            expect($routes)->toHaveKey('PATCH');
+            expect(array_keys($routes['PATCH']))->toContain('#^/test$#');
+        });
+
+        it('registers DELETE route', function () {
+            $this->router->delete('/test', fn () => 'test');
+
+            $routes = $this->router->getRoutes();
+
+            expect($routes)->toHaveKey('DELETE');
+            expect(array_keys($routes['DELETE']))->toContain('#^/test$#');
+        });
+
+        it('registers OPTIONS route', function () {
+            $this->router->options('/test', fn () => 'test');
+
+            $routes = $this->router->getRoutes();
+
+            expect($routes)->toHaveKey('OPTIONS');
+            expect(array_keys($routes['OPTIONS']))->toContain('#^/test$#');
+        });
+
+        it('registers route for all methods using any', function () {
+            $this->router->any('/test', fn () => 'test');
+
+            $routes = $this->router->getRoutes();
+
+            expect($routes)->toHaveKey('GET');
+            expect($routes)->toHaveKey('POST');
+            expect($routes)->toHaveKey('PUT');
+            expect($routes)->toHaveKey('PATCH');
+            expect($routes)->toHaveKey('DELETE');
+            expect($routes)->toHaveKey('OPTIONS');
         });
 
         it('registers multiple routes', function () {
@@ -37,10 +86,74 @@ describe('Router', function () {
             $this->router->get('/two', fn () => 'two');
             $this->router->post('/three', fn () => 'three');
 
-            $routes = getPrivateProperty($this->router, 'routes');
+            $routes = $this->router->getRoutes();
 
             expect($routes['GET'])->toHaveCount(2);
             expect($routes['POST'])->toHaveCount(1);
+        });
+    });
+
+    describe('route parameters', function () {
+        it('registers route with single parameter', function () {
+            $this->router->get('/users/{id}', fn () => 'test');
+
+            $routes = $this->router->getRoutes();
+
+            expect(array_keys($routes['GET']))->toContain('#^/users/([^/]+)$#');
+            expect($routes['GET']['#^/users/([^/]+)$#']['params'])->toBe(['id']);
+        });
+
+        it('registers route with multiple parameters', function () {
+            $this->router->get('/users/{userId}/posts/{postId}', fn () => 'test');
+
+            $routes = $this->router->getRoutes();
+
+            expect(array_keys($routes['GET']))->toContain('#^/users/([^/]+)/posts/([^/]+)$#');
+            expect($routes['GET']['#^/users/([^/]+)/posts/([^/]+)$#']['params'])->toBe(['userId', 'postId']);
+        });
+
+        it('dispatches route with parameter to closure', function () {
+            $receivedId = null;
+            $this->router->get('/users/{id}', function (Request $req, Response $res, string $id) use (&$receivedId) {
+                $receivedId = $id;
+            });
+
+            $request = createMockRequest('GET', '/users/123');
+            $response = new Response();
+
+            $this->router->dispatch($request, $response);
+
+            expect($receivedId)->toBe('123');
+        });
+
+        it('dispatches route with multiple parameters', function () {
+            $receivedUserId = null;
+            $receivedPostId = null;
+            $this->router->get('/users/{userId}/posts/{postId}', function (Request $req, Response $res, string $userId, string $postId) use (&$receivedUserId, &$receivedPostId) {
+                $receivedUserId = $userId;
+                $receivedPostId = $postId;
+            });
+
+            $request = createMockRequest('GET', '/users/42/posts/99');
+            $response = new Response();
+
+            $this->router->dispatch($request, $response);
+
+            expect($receivedUserId)->toBe('42');
+            expect($receivedPostId)->toBe('99');
+        });
+
+        it('dispatches route with parameter to controller', function () {
+            $this->router->get('/items/{id}', [TestControllerWithParams::class, 'show']);
+
+            $request = createMockRequest('GET', '/items/456');
+            $response = new Response();
+
+            ob_start();
+            $this->router->dispatch($request, $response);
+            $output = ob_get_clean();
+
+            expect($output)->toBe('item: 456');
         });
     });
 
@@ -113,6 +226,76 @@ describe('Router', function () {
 
             expect($output)->toBe('404 - Not Found');
         });
+
+        it('dispatches PUT request', function () {
+            $output = '';
+            $this->router->put('/test', function (Request $req, Response $res) use (&$output) {
+                $output = 'put called';
+            });
+
+            $request = createMockRequest('PUT', '/test');
+            $response = new Response();
+
+            $this->router->dispatch($request, $response);
+
+            expect($output)->toBe('put called');
+        });
+
+        it('dispatches PATCH request', function () {
+            $output = '';
+            $this->router->patch('/test', function (Request $req, Response $res) use (&$output) {
+                $output = 'patch called';
+            });
+
+            $request = createMockRequest('PATCH', '/test');
+            $response = new Response();
+
+            $this->router->dispatch($request, $response);
+
+            expect($output)->toBe('patch called');
+        });
+
+        it('dispatches DELETE request', function () {
+            $output = '';
+            $this->router->delete('/test', function (Request $req, Response $res) use (&$output) {
+                $output = 'delete called';
+            });
+
+            $request = createMockRequest('DELETE', '/test');
+            $response = new Response();
+
+            $this->router->dispatch($request, $response);
+
+            expect($output)->toBe('delete called');
+        });
+
+        it('dispatches OPTIONS request', function () {
+            $output = '';
+            $this->router->options('/test', function (Request $req, Response $res) use (&$output) {
+                $output = 'options called';
+            });
+
+            $request = createMockRequest('OPTIONS', '/test');
+            $response = new Response();
+
+            $this->router->dispatch($request, $response);
+
+            expect($output)->toBe('options called');
+        });
+
+        it('normalizes URI with trailing slash', function () {
+            $output = '';
+            $this->router->get('/test', function (Request $req, Response $res) use (&$output) {
+                $output = 'normalized';
+            });
+
+            $request = createMockRequest('GET', '/test/');
+            $response = new Response();
+
+            $this->router->dispatch($request, $response);
+
+            expect($output)->toBe('normalized');
+        });
     });
 
     describe('controller DI', function () {
@@ -144,40 +327,13 @@ describe('Router', function () {
             $this->router->dispatch($request2, $response);
             $output = ob_get_clean();
 
-            // Both calls should show incrementing counter from same instance
             expect($output)->toBe('count: 1count: 2');
         });
     });
 });
 
-// Helper functions
+// Helper function
 
-/**
- * Get a private property value from an object.
- *
- * @param  object  $object
- * @param  string  $property
- *
- * @return mixed
- * @throws ReflectionException
- */
-function getPrivateProperty(object $object, string $property): mixed
-{
-    $reflection = new ReflectionClass($object);
-    $prop = $reflection->getProperty($property);
-    $prop->setAccessible(true);
-
-    return $prop->getValue($object);
-}
-
-/**
- * Create a mock request with the given method and URI.
- *
- * @param string $method
- * @param string $uri
- *
- * @return Request
- */
 function createMockRequest(string $method, string $uri): Request
 {
     $_SERVER['REQUEST_METHOD'] = $method;
@@ -188,102 +344,60 @@ function createMockRequest(string $method, string $uri): Request
 
 // Test helper classes
 
-/**
- * Test controller class.
- */
 class TestController
 {
-    /**
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return void
-     */
     public function index(Request $request, Response $response): void
     {
         echo 'index called';
     }
 }
 
-/**
- * Test dependency service class.
- */
+class TestControllerWithParams
+{
+    public function show(Request $request, Response $response, string $id): void
+    {
+        echo 'item: ' . $id;
+    }
+}
+
 class DependencyService
 {
     public string $name = 'dependency';
 }
 
-/**
- * Test controller with dependency injection.
- */
 class ControllerWithDependency
 {
-    /**
-     * @param DependencyService $service
-     */
-    public function __construct(
-        private DependencyService $service
-    ) {
+    public function __construct(private DependencyService $service)
+    {
     }
 
-    /**
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return void
-     */
     public function index(Request $request, Response $response): void
     {
         echo $this->service->name === 'dependency' ? 'dependency injected' : 'failed';
     }
 }
 
-/**
- * Shared service for testing singleton behavior.
- */
 class SharedService
 {
     public int $counter = 0;
 
-    /**
-     * @return int
-     */
     public function increment(): int
     {
         return ++$this->counter;
     }
 }
 
-/**
- * Test controller using shared service.
- */
 class ControllerUsingSharedService
 {
-    /**
-     * @param SharedService $service
-     */
-    public function __construct(
-        private SharedService $service
-    ) {
+    public function __construct(private SharedService $service)
+    {
     }
 
-    /**
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return void
-     */
     public function first(Request $request, Response $response): void
     {
         echo 'count: ' . $this->service->increment();
     }
 
-    /**
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return void
-     */
     public function second(Request $request, Response $response): void
     {
         echo 'count: ' . $this->service->increment();
