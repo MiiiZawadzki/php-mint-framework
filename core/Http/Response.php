@@ -9,7 +9,7 @@ class Response
     /**
      * Set the HTTP status code.
      *
-     * @param int $code
+     * @param  int  $code
      *
      * @return void
      */
@@ -21,8 +21,8 @@ class Response
     /**
      * Set an HTTP header.
      *
-     * @param string $key
-     * @param string $value
+     * @param  string  $key
+     * @param  string  $value
      *
      * @return void
      */
@@ -34,8 +34,8 @@ class Response
     /**
      * Render a view file with data.
      *
-     * @param string               $view
-     * @param array<string, mixed> $data
+     * @param  string  $view
+     * @param  array<string, mixed>  $data
      *
      * @return void
      */
@@ -48,12 +48,29 @@ class Response
     /**
      * Send JSON-encoded content.
      *
-     * @param mixed $content
+     * @param  mixed  $content
+     * @param  int  $statusCode
      *
      * @return void
      */
-    public function send(mixed $content): void
+    public function send(mixed $content, int $statusCode = 200): void
     {
+        $this->setStatusCode($statusCode);
+        $this->setHeader('Content-Type', 'application/json; charset=utf-8');
         echo json_encode($content);
+    }
+
+    /**
+     * Redirect to a URL.
+     *
+     * @param  string  $url
+     * @param  int  $statusCode
+     *
+     * @return void
+     */
+    public function redirect(string $url, int $statusCode = 302): void
+    {
+        $this->setStatusCode($statusCode);
+        $this->setHeader('Location', $url);
     }
 }

@@ -133,6 +133,50 @@ describe('Request', function () {
         });
     });
 
+    describe('getHeader', function () {
+        it('returns a specific header value', function () {
+            $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer abc123';
+
+            $request = new Request();
+
+            expect($request->getHeader('Authorization'))->toBe('Bearer abc123');
+        });
+
+        it('returns null for missing header', function () {
+            $request = new Request();
+
+            expect($request->getHeader('X-Custom'))->toBeNull();
+        });
+
+        it('handles hyphenated header names', function () {
+            $_SERVER['HTTP_X_CUSTOM_HEADER'] = 'custom-value';
+
+            $request = new Request();
+
+            expect($request->getHeader('X-Custom-Header'))->toBe('custom-value');
+        });
+    });
+
+    describe('getQuery', function () {
+        it('returns query parameters', function () {
+            $_GET = ['page' => '2', 'sort' => 'name'];
+
+            $request = new Request();
+
+            expect($request->getQuery())->toBe(['page' => '2', 'sort' => 'name']);
+
+            $_GET = [];
+        });
+
+        it('returns empty array when no query params', function () {
+            $_GET = [];
+
+            $request = new Request();
+
+            expect($request->getQuery())->toBe([]);
+        });
+    });
+
     describe('getReferer', function () {
         it('returns referer when set', function () {
             $_SERVER['HTTP_REFERER'] = 'https://example.com/previous';

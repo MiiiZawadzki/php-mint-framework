@@ -10,6 +10,7 @@ use Mint\Core\Database\MigrationRepository;
 use Mint\Core\Database\MigrationRunner;
 
 $migrationFiles = glob(__DIR__ . '/database/Migrations/*.php');
+sort($migrationFiles);
 
 foreach ($migrationFiles as $file) {
     require_once $file;

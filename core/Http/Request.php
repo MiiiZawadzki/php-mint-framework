@@ -37,6 +37,49 @@ class Request
     }
 
     /**
+     * Get query parameters.
+     *
+     * @return array<string, mixed>
+     */
+    public function getQuery(): array
+    {
+        return $_GET;
+    }
+
+    /**
+     * Get a specific HTTP header.
+     *
+     * @param  string  $name
+     *
+     * @return string|null
+     */
+    public function getHeader(string $name): ?string
+    {
+        // Convert header name to $_SERVER format: Authorization -> HTTP_AUTHORIZATION
+        $key = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
+
+        return $_SERVER[$key] ?? null;
+    }
+
+    /**
+     * Get the JSON-decoded request body.
+     *
+     * @return array<string, mixed>
+     */
+    public function getJson(): array
+    {
+        $body = file_get_contents('php://input');
+
+        if ($body === false || $body === '') {
+            return [];
+        }
+
+        $decoded = json_decode($body, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
      * Get the HTTP referer.
      *
      * @return string

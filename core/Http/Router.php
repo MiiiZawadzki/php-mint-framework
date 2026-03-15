@@ -12,7 +12,7 @@ class Router
     /**
      * Registered routes.
      *
-     * @var array<string, array<string, callable|array{0: class-string|object, 1: string}>>
+     * @var array<string, array<string, array{callback: callable|array, params: array, middleware: array}>>
      */
     private array $routes = [];
 
@@ -22,6 +22,13 @@ class Router
      * @var Container
      */
     private Container $container;
+
+    /**
+     * Middleware stack being applied to the current group.
+     *
+     * @var array<class-string<MiddlewareInterface>>
+     */
+    private array $currentMiddleware = [];
 
     /**
      * Create a new router instance.
@@ -123,6 +130,24 @@ class Router
     }
 
     /**
+     * Register routes within a middleware group.
+     *
+     * @param  array<class-string<MiddlewareInterface>>  $middleware
+     * @param  callable  $callback
+     *
+     * @return void
+     */
+    public function middleware(array $middleware, callable $callback): void
+    {
+        $previous = $this->currentMiddleware;
+        $this->currentMiddleware = array_merge($this->currentMiddleware, $middleware);
+
+        $callback($this);
+
+        $this->currentMiddleware = $previous;
+    }
+
+    /**
      * @param  string  $method
      * @param  string  $uri
      * @param  callable|array  $callback
@@ -146,6 +171,7 @@ class Router
         $this->routes[$method][$pattern] = [
             'callback' => $callback,
             'params' => $params,
+            'middleware' => $this->currentMiddleware,
         ];
     }
 
@@ -172,12 +198,59 @@ class Router
         foreach ($this->routes[$method] as $pattern => $route) {
             if (preg_match($pattern, $uri, $matches)) {
                 array_shift($matches);
-                $this->executeCallback($route['callback'], $request, $response, $matches);
+
+                $middleware = $route['middleware'] ?? [];
+
+                if (empty($middleware)) {
+                    $this->executeCallback($route['callback'], $request, $response, $matches);
+                    return;
+                }
+
+                $this->runMiddlewarePipeline(
+                    $middleware,
+                    $request,
+                    $response,
+                    fn() => $this->executeCallback($route['callback'], $request, $response, $matches),
+                );
+
                 return;
             }
         }
 
         $this->notFound($response);
+    }
+
+    /**
+     * Run the middleware pipeline for a route.
+     *
+     * @param  array<class-string<MiddlewareInterface>>  $middleware
+     * @param  Request  $request
+     * @param  Response  $response
+     * @param  callable  $destination
+     *
+     * @return void
+     *
+     * @throws ReflectionException
+     */
+    private function runMiddlewarePipeline(
+        array $middleware,
+        Request $request,
+        Response $response,
+        callable $destination
+    ): void {
+        $pipeline = array_reduce(
+            array_reverse($middleware),
+            function (callable $next, string $middlewareClass) use ($request, $response): callable {
+                return function () use ($middlewareClass, $request, $response, $next): void {
+                    /** @var MiddlewareInterface $instance */
+                    $instance = $this->container->make($middlewareClass);
+                    $instance->handle($request, $next);
+                };
+            },
+            $destination,
+        );
+
+        $pipeline();
     }
 
     /**
@@ -220,7 +293,7 @@ class Router
     }
 
     /**
-     * @return \array[][]|callable[][]
+     * @return array[][]|callable[][]
      */
     public function getRoutes(): array
     {

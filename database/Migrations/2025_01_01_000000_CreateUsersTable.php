@@ -22,7 +22,7 @@ class CreateUsersTable implements MigrationInterface
     /**
      * Run the migration.
      *
-     * @param PDO $pdo
+     * @param  PDO  $pdo
      *
      * @return void
      */
@@ -42,7 +42,7 @@ class CreateUsersTable implements MigrationInterface
     /**
      * Reverse the migration.
      *
-     * @param PDO $pdo
+     * @param  PDO  $pdo
      *
      * @return void
      */

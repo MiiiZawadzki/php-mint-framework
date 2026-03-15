@@ -2,11 +2,16 @@
 
 namespace App\Controllers;
 
+use Mint\Core\Auth\Auth;
 use Mint\Core\Http\Request;
 use Mint\Core\Http\Response;
 
 class IndexController
 {
+    public function __construct(private readonly Auth $auth)
+    {
+    }
+
     /**
      * @param  Request  $request
      * @param  Response  $response
@@ -16,7 +21,10 @@ class IndexController
     {
         $response->render(
             __DIR__ . '/../../views/index.php',
-            ['version' => app_version()]
+            [
+                'version' => app_version(),
+                'isAuthenticated' => $this->auth->check(),
+            ]
         );
     }
 

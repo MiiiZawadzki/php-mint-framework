@@ -8,6 +8,17 @@
 </head>
 <body>
 
+<nav class="corner-nav">
+    <?php
+    if ($isAuthenticated): ?>
+        <a href="/dashboard" class="btn">DASHBOARD</a>
+    <?php
+    else: ?>
+        <a href="/login" class="btn">LOGIN</a>
+    <?php
+    endif; ?>
+</nav>
+
 <div class="container">
     <h1>PHP-MINT</h1>
 
@@ -26,7 +37,7 @@
         SYSTEM_STATUS: READY<br>
         <?php
         if (isset($version)) {
-            echo 'CORE_VERSION: '.htmlspecialchars($version).'<br>';
+            echo 'CORE_VERSION: ' . htmlspecialchars($version) . '<br>';
         }
         ?>
         <?php

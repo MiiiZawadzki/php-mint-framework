@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
+use Mint\Core\Auth\Auth;
 use Mint\Core\Container;
 
 if (!function_exists('app')) {
     /**
      * Get container instance or resolve a service.
      *
-     * @param string|null $abstract
+     * @param  string|null  $abstract
      *
      * @return mixed
      * @throws ReflectionException
@@ -18,6 +19,19 @@ if (!function_exists('app')) {
         $container = Container::getInstance();
 
         return $abstract ? $container->make($abstract) : $container;
+    }
+}
+
+if (!function_exists('auth')) {
+    /**
+     * Get the Auth service instance.
+     *
+     * @return Auth
+     * @throws ReflectionException
+     */
+    function auth(): Auth
+    {
+        return app(Auth::class);
     }
 }
 
